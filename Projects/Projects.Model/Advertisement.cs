@@ -1,8 +1,9 @@
 ﻿using System;
+using Projects.Model.Common;
 
 namespace Projects.Model
 {
-    public class Advertisement
+    public class Advertisement : IAdvertisement
     {
         public Guid Id { get; set; }
         public string Title { get; set; }

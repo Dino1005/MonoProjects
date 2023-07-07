@@ -1,9 +1,9 @@
 ﻿using System;
-
+using Projects.Model.Common;
 
 namespace Projects.Model
 {
-    public class Account
+    public class Account : IAccount
     {
         public Guid Id { get; set; }
         public string FirstName { get; set; }

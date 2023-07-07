@@ -4,12 +4,13 @@ using Projects.Repository.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Projects.Repository
 {
     public class AdvertisementRepository : IAdvertisementRepository
     {
-        public List<Advertisement> GetAll()
+        public async Task<List<Advertisement>> GetAllAsync()
         {
             List<Advertisement> advertisements = new List<Advertisement>();
             NpgsqlConnection connection = new NpgsqlConnection(Database.connectionString);
@@ -24,7 +25,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    NpgsqlDataReader reader = command.ExecuteReader();
+                    NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                     if (reader.HasRows)
                     {
                         while (reader.Read())
@@ -48,13 +49,13 @@ namespace Projects.Repository
             return advertisements;
         }
 
-        public Advertisement GetById(Guid id)
+        public async Task<Advertisement> GetByIdAsync(Guid id)
         {
-            Advertisement advertisement = GetAdvertisementById(id);
+            Advertisement advertisement = await GetAdvertisementByIdAsync(id);
             return advertisement;
         }
 
-        public int Add(Advertisement advertisement)
+        public async Task<int> AddAsync(Advertisement advertisement)
         {
             int affectedRows;
 
@@ -76,7 +77,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    affectedRows = command.ExecuteNonQuery();
+                    affectedRows = await command.ExecuteNonQueryAsync();
                 }
                 catch (Exception)
                 {
@@ -87,9 +88,9 @@ namespace Projects.Repository
             return affectedRows;
         }
 
-        public int Update(Guid id, Advertisement advertisement)
+        public async Task<int> UpdateAsync(Guid id, Advertisement advertisement)
         {
-            Advertisement advertisementToUpdate = GetAdvertisementById(id);
+            Task<Advertisement> advertisementToUpdate = GetAdvertisementByIdAsync(id);
             if (advertisementToUpdate == null)
             {
                 return 0;
@@ -135,7 +136,7 @@ namespace Projects.Repository
                     {
                         connection.Open();
 
-                        affectedRows = command.ExecuteNonQuery();
+                        affectedRows = await command.ExecuteNonQueryAsync();
                     }
                     catch (Exception)
                     {
@@ -146,9 +147,9 @@ namespace Projects.Repository
             return affectedRows;
         }
 
-        public int Delete(Guid id)
+        public async Task<int> DeleteAsync(Guid id)
         {
-            Advertisement advertisementToDelete = GetAdvertisementById(id);
+            Task<Advertisement> advertisementToDelete = GetAdvertisementByIdAsync(id);
             if (advertisementToDelete == null)
             {
                 return 0;
@@ -169,7 +170,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    affectedRows = command.ExecuteNonQuery();
+                    affectedRows = await command.ExecuteNonQueryAsync();
                 }
                 catch (Exception)
                 {
@@ -180,7 +181,7 @@ namespace Projects.Repository
             return affectedRows;
         }
 
-        private Advertisement GetAdvertisementById(Guid id)
+        private async Task<Advertisement> GetAdvertisementByIdAsync(Guid id)
         {
             Advertisement advertisement = null;
 
@@ -197,7 +198,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    NpgsqlDataReader reader = command.ExecuteReader();
+                    NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                     if (reader.HasRows)
                     {
                         while (reader.Read())

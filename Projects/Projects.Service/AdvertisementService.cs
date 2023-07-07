@@ -2,39 +2,41 @@
 using Projects.Repository;
 using System.Collections.Generic;
 using System;
+using Projects.Service.Common;
+using System.Threading.Tasks;
 
 namespace Projects.Service
 {
-    public class AdvertisementService
+    public class AdvertisementService : IAdvertisementService
     {
-        public List<Advertisement> GetAll()
+        public async Task<List<Advertisement>> GetAllAsync()
         {
             AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return advertisementRepository.GetAll();
+            return await advertisementRepository.GetAllAsync();
         }
 
-        public Advertisement GetById(Guid id)
+        public async Task<Advertisement> GetByIdAsync(Guid id)
         {
             AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return advertisementRepository.GetById(id);
+            return await advertisementRepository.GetByIdAsync(id);
         }
 
-        public int Add(Advertisement advertisement)
+        public async Task<int> AddAsync(Advertisement advertisement)
         {
             AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return advertisementRepository.Add(advertisement);
+            return await advertisementRepository.AddAsync(advertisement);
         }
 
-        public int Update(Guid id, Advertisement advertisement)
+        public async Task<int> UpdateAsync(Guid id, Advertisement advertisement)
         {
             AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return advertisementRepository.Update(id, advertisement);
+            return await advertisementRepository.UpdateAsync(id, advertisement);
         }
 
-        public int Delete(Guid id)
+        public async Task<int> DeleteAsync(Guid id)
         {
             AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return advertisementRepository.Delete(id);
+            return await advertisementRepository.DeleteAsync(id);
         }
     }
 }

@@ -4,12 +4,13 @@ using Npgsql;
 using System.Text;
 using System.Collections.Generic;
 using System;
+using System.Threading.Tasks;
 
 namespace Projects.Repository
 {
     public class AccountRepository : IAccountRepository
     {
-        public List<Account> GetAll()
+        public async Task<List<Account>> GetAllAsync()
         {
             List<Account> accounts = new List<Account>();
             NpgsqlConnection connection = new NpgsqlConnection(Database.connectionString);
@@ -24,7 +25,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    NpgsqlDataReader reader = command.ExecuteReader();
+                    NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                     if (reader.HasRows)
                     {
                         while (reader.Read())
@@ -45,16 +46,16 @@ namespace Projects.Repository
             return accounts;
         }
 
-        public Account GetById(Guid id)
+        public async Task<Account> GetByIdAsync(Guid id)
         {
-            Account account = GetAccountById(id);
+            Account account = await GetAccountByIdAsync(id);
             return account;
         }
 
-        public List<Advertisement> GetAdvertisements(Guid id)
+        public async Task<List<Advertisement>> GetAdvertisementsAsync(Guid id)
         {
             List<Advertisement> advertisements = new List<Advertisement>();
-            Account account = GetAccountById(id);
+            Account account = await GetAccountByIdAsync(id);
             if (account == null)
             {
                 return advertisements;
@@ -74,7 +75,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    NpgsqlDataReader reader = command.ExecuteReader();
+                    NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                     if (reader.HasRows)
                     {
                         while (reader.Read())
@@ -98,7 +99,7 @@ namespace Projects.Repository
             return advertisements;
         }
 
-        public int Add(Account account)
+        public async Task<int> AddAsync(Account account)
         {
             int affectedRows;
 
@@ -117,7 +118,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    affectedRows = command.ExecuteNonQuery();
+                    affectedRows = await command.ExecuteNonQueryAsync();
                 }
                 catch (Exception)
                 {
@@ -128,9 +129,9 @@ namespace Projects.Repository
             return affectedRows;
         }
 
-        public int Update(Guid id, Account account)
+        public async Task<int> UpdateAsync(Guid id, Account account)
         {
-            Account accountToUpdate = GetAccountById(id);
+            Account accountToUpdate = await GetAccountByIdAsync(id);
             if(accountToUpdate == null)
             {
                 return 0;
@@ -169,7 +170,7 @@ namespace Projects.Repository
                     {
                         connection.Open();
 
-                        affectedRows = command.ExecuteNonQuery();
+                        affectedRows = await command.ExecuteNonQueryAsync();
                     }
                     catch (Exception)
                     {
@@ -180,9 +181,9 @@ namespace Projects.Repository
             return affectedRows;
         }
 
-        public int Delete(Guid id)
+        public async Task<int> DeleteAsync(Guid id)
         {
-            Account accountToDelete = GetAccountById(id);
+            Account accountToDelete = await GetAccountByIdAsync(id);
             if (accountToDelete == null)
             {
                 return 0;
@@ -203,7 +204,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    affectedRows = command.ExecuteNonQuery();
+                    affectedRows = await command.ExecuteNonQueryAsync();
                 }
                 catch (Exception)
                 {
@@ -214,7 +215,7 @@ namespace Projects.Repository
             return affectedRows;
         }
 
-        private Account GetAccountById(Guid id)
+        private async Task<Account> GetAccountByIdAsync(Guid id)
         {
             Account account = null;
 
@@ -231,7 +232,7 @@ namespace Projects.Repository
                 {
                     connection.Open();
 
-                    NpgsqlDataReader reader = command.ExecuteReader();
+                    NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                     if (reader.HasRows)
                     {
                         while (reader.Read())

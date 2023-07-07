@@ -3,45 +3,46 @@ using Projects.Model;
 using Projects.Repository;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Projects.Service
 {
     public class AccountService : IAccountService
     {
-        public List<Account> GetAll()
+        public async Task<List<Account>> GetAllAsync()
         {
             AccountRepository accountRepository = new AccountRepository();
-            return accountRepository.GetAll();
+            return await accountRepository.GetAllAsync();
         }
 
-        public Account GetById(Guid id)
+        public async Task<Account> GetByIdAsync(Guid id)
         {
             AccountRepository accountRepository = new AccountRepository();
-            return accountRepository.GetById(id);
+            return await accountRepository.GetByIdAsync(id);
         }
 
-        public List<Advertisement> GetAdvertisements(Guid id)
+        public async Task<List<Advertisement>> GetAdvertisementsAsync(Guid id)
         {
             AccountRepository accountRepository = new AccountRepository();
-            return accountRepository.GetAdvertisements(id);
+            return await accountRepository.GetAdvertisementsAsync(id);
         }
 
-        public int Add(Account account)
+        public async Task<int> AddAsync(Account account)
         {
             AccountRepository accountRepository = new AccountRepository();
-            return accountRepository.Add(account);
+            return await accountRepository.AddAsync(account);
         }
 
-        public int Update(Guid id, Account account)
+        public async Task<int> UpdateAsync(Guid id, Account account)
         {
             AccountRepository accountRepository = new AccountRepository();
-            return accountRepository.Update(id, account);
+            return await accountRepository.UpdateAsync(id, account);
         }
 
-        public int Delete(Guid id)
+        public async Task<int> DeleteAsync(Guid id)
         {
             AccountRepository accountRepository = new AccountRepository();
-            return accountRepository.Delete(id);
+            return await accountRepository.DeleteAsync(id);
         }
     }
 }

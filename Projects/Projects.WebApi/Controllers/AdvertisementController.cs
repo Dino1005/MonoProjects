@@ -6,16 +6,17 @@ using System.Web.Http;
 using Projects.Model;
 using Projects.WebApi.Models;
 using Projects.Service;
+using System.Threading.Tasks;
 
 namespace Mono.WebApi.Controllers
 {
     public class AdvertisementController : ApiController
     {
         [HttpGet]
-        public HttpResponseMessage GetAllAdvertisements()
+        public async Task<HttpResponseMessage> GetAllAdvertisements()
         {
             AdvertisementService advertisementService = new AdvertisementService();
-            List<Advertisement> advertisements = advertisementService.GetAll();
+            List<Advertisement> advertisements = await advertisementService.GetAllAsync();
             if (advertisements.Count <= 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No advertisements found.");
@@ -30,10 +31,10 @@ namespace Mono.WebApi.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage GetById(Guid id)
+        public async Task<HttpResponseMessage> GetById(Guid id)
         {
             AdvertisementService advertisementService = new AdvertisementService();
-            Advertisement advertisement = advertisementService.GetById(id);
+            Advertisement advertisement = await advertisementService.GetByIdAsync(id);
             if (advertisement == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Advertisement with that ID was not found!");
@@ -43,7 +44,7 @@ namespace Mono.WebApi.Controllers
         }
 
         [HttpPost]
-        public HttpResponseMessage InsertAdvertisement([FromBody] AdvertisementCreate advertisement)
+        public async Task<HttpResponseMessage> InsertAdvertisement([FromBody] AdvertisementCreate advertisement)
         {
             if (advertisement == null)
             {
@@ -56,7 +57,7 @@ namespace Mono.WebApi.Controllers
             Advertisement advertisementToInsert = new Advertisement(Guid.NewGuid(), advertisement.Title, advertisement.UploadDate, advertisement.CategoryId, advertisement.PriorityId, advertisement.AccountId);
 
             AdvertisementService advertisementService = new AdvertisementService();
-            int affectedRows = advertisementService.Add(advertisementToInsert);
+            int affectedRows = await advertisementService.AddAsync(advertisementToInsert);
 
             if (affectedRows > 0)
             {
@@ -66,7 +67,7 @@ namespace Mono.WebApi.Controllers
         }
 
         [HttpPut]
-        public HttpResponseMessage UpdateAdvertisement(Guid id, [FromBody] AdvertisementUpdate advertisement)
+        public async Task<HttpResponseMessage> UpdateAdvertisement(Guid id, [FromBody] AdvertisementUpdate advertisement)
         {
             if (id == null)
             {
@@ -79,7 +80,7 @@ namespace Mono.WebApi.Controllers
 
             Advertisement advertisementToUpdate = new Advertisement(id, advertisement.Title, null, advertisement.CategoryId, advertisement.PriorityId, null);
             AdvertisementService advertisementService = new AdvertisementService();
-            int affectedRows = advertisementService.Update(id, advertisementToUpdate);
+            int affectedRows = await advertisementService.UpdateAsync(id, advertisementToUpdate);
             if (affectedRows == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Advertisement with that ID was not found!");
@@ -92,7 +93,7 @@ namespace Mono.WebApi.Controllers
         }
 
         [HttpDelete]
-        public HttpResponseMessage DeleteAdvertisement(Guid id)
+        public async Task<HttpResponseMessage> DeleteAdvertisement(Guid id)
         {
             if (id == null)
             {
@@ -100,7 +101,7 @@ namespace Mono.WebApi.Controllers
             }
 
             AdvertisementService advertisementService = new AdvertisementService();
-            int affectedRows = advertisementService.Delete(id);
+            int affectedRows = await advertisementService.DeleteAsync(id);
 
             if (affectedRows > 0)
             {

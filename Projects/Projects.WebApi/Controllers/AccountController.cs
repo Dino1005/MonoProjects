@@ -7,16 +7,17 @@ using System.Web.Http;
 using Projects.WebApi.Models;
 using Projects.Service;
 using Projects.Model;
+using System.Threading.Tasks;
 
 namespace Projects.WebApi.Controllers
 {
     public class AccountController : ApiController
     {
         [HttpGet]
-        public HttpResponseMessage GetAllAccounts()
+        public async Task<HttpResponseMessage> GetAllAccounts()
         {
             AccountService accountService = new AccountService();
-            List<Account> accounts = accountService.GetAll();
+            List<Account> accounts = await accountService.GetAllAsync();
             if(accounts.Count <= 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No accounts found.");
@@ -31,10 +32,10 @@ namespace Projects.WebApi.Controllers
         }
 
         [HttpGet]
-        public HttpResponseMessage GetById(Guid id)
+        public async Task<HttpResponseMessage> GetById(Guid id)
         {
             AccountService accountService = new AccountService();
-            Account account = accountService.GetById(id);
+            Account account = await accountService.GetByIdAsync(id);
             if (account == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Account with that ID was not found!");
@@ -44,7 +45,7 @@ namespace Projects.WebApi.Controllers
         }
 
         [HttpPost]
-        public HttpResponseMessage InsertAccount([FromBody] AccountCreate account)
+        public async Task<HttpResponseMessage> InsertAccount([FromBody] AccountCreate account)
         {
             if(account == null)
             {
@@ -57,7 +58,7 @@ namespace Projects.WebApi.Controllers
             Account accountToInsert = new Account(Guid.NewGuid(), account.FirstName, account.LastName);
                 
             AccountService accountService = new AccountService();
-            int affectedRows = accountService.Add(accountToInsert);
+            int affectedRows = await accountService.AddAsync(accountToInsert);
 
             if(affectedRows > 0)
             {
@@ -67,7 +68,7 @@ namespace Projects.WebApi.Controllers
         }
 
         [HttpPut]
-        public HttpResponseMessage UpdateAccount(Guid id, [FromBody] AccountUpdate account)
+        public async Task<HttpResponseMessage> UpdateAccount(Guid id, [FromBody] AccountUpdate account)
         {
             if(id == null)
             {
@@ -80,7 +81,7 @@ namespace Projects.WebApi.Controllers
 
             Account accountToUpdate = new Account(id, account.FirstName, account.LastName);
             AccountService accountService = new AccountService();
-            int affectedRows = accountService.Update(id, accountToUpdate);
+            int affectedRows = await accountService.UpdateAsync(id, accountToUpdate);
             if (affectedRows == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Account with that ID was not found!");
@@ -93,7 +94,7 @@ namespace Projects.WebApi.Controllers
         }
 
         [HttpDelete]
-        public HttpResponseMessage DeleteAccount(Guid id)
+        public async Task<HttpResponseMessage> DeleteAccount(Guid id)
         {
             if (id == null)
             {
@@ -101,7 +102,7 @@ namespace Projects.WebApi.Controllers
             }
 
             AccountService accountService = new AccountService();
-            int affectedRows = accountService.Delete(id);
+            int affectedRows = await accountService.DeleteAsync(id);
 
             if (affectedRows > 0)
             {
@@ -112,10 +113,10 @@ namespace Projects.WebApi.Controllers
 
         [Route("api/account/ads")]
         [HttpGet]
-        public HttpResponseMessage GetAdvertisementsByAccount(Guid id)
+        public async Task<HttpResponseMessage> GetAdvertisementsByAccount(Guid id)
         {
             AccountService accountService = new AccountService();
-            List<Advertisement> advertisements = accountService.GetAdvertisements(id);
+            List<Advertisement> advertisements = await accountService.GetAdvertisementsAsync(id);
 
             if (advertisements.Any())
             {
