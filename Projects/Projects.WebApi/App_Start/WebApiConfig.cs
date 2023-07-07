@@ -7,7 +7,6 @@ namespace Projects.WebApi
 {
     public static class WebApiConfig
     {
-        public static readonly string connectionString = "Server=localhost;Port=5432;Database=postgres;User Id=postgres;Password=22482433;";
         public static void Register(HttpConfiguration config)
         {
             // Web API configuration and services

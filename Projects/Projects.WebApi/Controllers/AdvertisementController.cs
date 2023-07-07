@@ -1,14 +1,11 @@
-﻿using Mono.WebApi.Models;
-using Npgsql;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net;
-using System.Web;
 using System.Web.Http;
-using System.Security.Principal;
-using System.Text;
+using Projects.Model;
+using Projects.WebApi.Models;
+using Projects.Service;
 
 namespace Mono.WebApi.Controllers
 {
@@ -17,54 +14,32 @@ namespace Mono.WebApi.Controllers
         [HttpGet]
         public HttpResponseMessage GetAllAdvertisements()
         {
-            List<AdvertisementView> advertisements = new List<AdvertisementView>();
-            NpgsqlConnection connection = new NpgsqlConnection(WebApiConfig.connectionString);
-
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.CommandText = "SELECT * FROM Advertisement";
-            command.Connection = connection;
-
-            using (connection)
+            AdvertisementService advertisementService = new AdvertisementService();
+            List<Advertisement> advertisements = advertisementService.GetAll();
+            if (advertisements.Count <= 0)
             {
-                try
-                {
-                    connection.Open();
-
-                    NpgsqlDataReader reader = command.ExecuteReader();
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
-                        {
-                            Guid id = (Guid)reader["Id"];
-                            string title = (string)reader["Title"];
-                            DateTime uploadDate = (DateTime)reader["UploadDate"];
-                            advertisements.Add(new AdvertisementView(id, title, uploadDate));
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No advertisements found.");
             }
 
-            if (advertisements.Any())
+            List<AdvertisementView> advertisementViews = new List<AdvertisementView>();
+            foreach (var advertisement in advertisements)
             {
-                return Request.CreateResponse(HttpStatusCode.OK, advertisements);
+                advertisementViews.Add(new AdvertisementView(advertisement.Title, advertisement.UploadDate));
             }
-            return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No advertisements found.");
+            return Request.CreateResponse(HttpStatusCode.OK, advertisementViews);
         }
 
         [HttpGet]
         public HttpResponseMessage GetById(Guid id)
         {
-            AdvertisementView advertisement = GetAdvertisementById(id);
+            AdvertisementService advertisementService = new AdvertisementService();
+            Advertisement advertisement = advertisementService.GetById(id);
             if (advertisement == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Advertisement with that ID was not found!");
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, advertisement);
+            return Request.CreateResponse(HttpStatusCode.OK, new AdvertisementView(advertisement.Title, advertisement.UploadDate));
         }
 
         [HttpPost]
@@ -76,36 +51,12 @@ namespace Mono.WebApi.Controllers
             }
             if (!ModelState.IsValid)
             {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "No field can be empty!");
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "All fields must be entered!");
             }
+            Advertisement advertisementToInsert = new Advertisement(Guid.NewGuid(), advertisement.Title, advertisement.UploadDate, advertisement.CategoryId, advertisement.PriorityId, advertisement.AccountId);
 
-            int affectedRows;
-
-            NpgsqlConnection connection = new NpgsqlConnection(WebApiConfig.connectionString);
-
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.CommandText = "INSERT INTO Advertisement (Id, Title, UploadDate, CategoryId, PriorityId, AccountId) VALUES (@Id, @Title, @UploadDate, @CategoryId, @PriorityId, @AccountId)";
-            command.Connection = connection;
-            command.Parameters.AddWithValue("@Id", advertisement.Id);
-            command.Parameters.AddWithValue("@Title", advertisement.Title);
-            command.Parameters.AddWithValue("@UploadDate", advertisement.UploadDate);
-            command.Parameters.AddWithValue("@CategoryId", advertisement.CategoryId);
-            command.Parameters.AddWithValue("@PriorityId", advertisement.PriorityId);
-            command.Parameters.AddWithValue("@AccountId", advertisement.AccountId);
-
-            using (connection)
-            {
-                try
-                {
-                    connection.Open();
-
-                    affectedRows = command.ExecuteNonQuery();
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-            }
+            AdvertisementService advertisementService = new AdvertisementService();
+            int affectedRows = advertisementService.Add(advertisementToInsert);
 
             if (affectedRows > 0)
             {
@@ -125,69 +76,17 @@ namespace Mono.WebApi.Controllers
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Advertisement is null!");
             }
-            if (!ModelState.IsValid)
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "No field can be empty!");
-            }
 
-            AdvertisementView advertisementToUpdate = GetAdvertisementById(id);
-            if (advertisementToUpdate == null)
+            Advertisement advertisementToUpdate = new Advertisement(id, advertisement.Title, null, advertisement.CategoryId, advertisement.PriorityId, null);
+            AdvertisementService advertisementService = new AdvertisementService();
+            int affectedRows = advertisementService.Update(id, advertisementToUpdate);
+            if (affectedRows == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Advertisement with that ID was not found!");
             }
-
-            int affectedRows;
-
-            NpgsqlConnection connection = new NpgsqlConnection(WebApiConfig.connectionString);
-
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.Connection = connection;
-            command.Parameters.AddWithValue("@Id", id);
-
-            StringBuilder queryBuilder = new StringBuilder("UPDATE Advertisement SET ");
-
-            if (!string.IsNullOrEmpty(advertisement.Title))
+            if (affectedRows > 0)
             {
-                queryBuilder.Append("Title = @Title, ");
-                command.Parameters.AddWithValue("@Title", advertisement.Title);
-            }
-
-            if (advertisement.CategoryId != null)
-            {
-                queryBuilder.Append("CategoryId = @CategoryId, ");
-                command.Parameters.AddWithValue("@CategoryId", advertisement.CategoryId);
-            }
-
-            if (advertisement.PriorityId != null)
-            {
-                queryBuilder.Append("PriorityId = @PriorityId, ");
-                command.Parameters.AddWithValue("@PriorityId", advertisement.PriorityId);
-            }
-
-            if (queryBuilder.Length > "UPDATE Advertisement SET ".Length)
-            {
-                queryBuilder.Length -= 2;
-                queryBuilder.Append(" WHERE Id = @Id");
-                command.CommandText = queryBuilder.ToString();
-
-                using (connection)
-                {
-                    try
-                    {
-                        connection.Open();
-
-                        affectedRows = command.ExecuteNonQuery();
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
-                }
-
-                if (affectedRows > 0)
-                {
-                    return Request.CreateResponse(HttpStatusCode.OK, $"Advertisement was updated. Affected rows: {affectedRows}");
-                }
+                return Request.CreateResponse(HttpStatusCode.OK, $"Advertisement was updated. Affected rows: {affectedRows}");
             }
             return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Advertisement was not updated!");
         }
@@ -200,77 +99,14 @@ namespace Mono.WebApi.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Id is null!");
             }
 
-            AdvertisementView advertisement = GetAdvertisementById(id);
-            if (advertisement == null)
-            {
-                return Request.CreateResponse(HttpStatusCode.NotFound, "Advertisement with that ID was not found!");
-            }
-
-            int affectedRows;
-
-            NpgsqlConnection connection = new NpgsqlConnection(WebApiConfig.connectionString);
-
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.CommandText = "DELETE FROM Advertisement WHERE Id=@Id";
-            command.Connection = connection;
-            command.Parameters.AddWithValue("@Id", id);
-
-            using (connection)
-            {
-                try
-                {
-                    connection.Open();
-
-                    affectedRows = command.ExecuteNonQuery();
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-            }
+            AdvertisementService advertisementService = new AdvertisementService();
+            int affectedRows = advertisementService.Delete(id);
 
             if (affectedRows > 0)
             {
                 return Request.CreateResponse(HttpStatusCode.OK, $"Advertisement was deleted. Affected rows: {affectedRows}");
             }
             return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Advertisement was not deleted!");
-        }
-
-        private AdvertisementView GetAdvertisementById(Guid id)
-        {
-            AdvertisementView advertisement = null;
-
-            NpgsqlConnection connection = new NpgsqlConnection(WebApiConfig.connectionString);
-
-            NpgsqlCommand command = new NpgsqlCommand();
-            command.CommandText = "SELECT * FROM Advertisement WHERE Id=@Id";
-            command.Parameters.AddWithValue("@Id", id);
-            command.Connection = connection;
-
-            using (connection)
-            {
-                try
-                {
-                    connection.Open();
-
-                    NpgsqlDataReader reader = command.ExecuteReader();
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
-                        {
-                            string title = (string)reader["Title"];
-                            DateTime uploadDate = (DateTime)reader["UploadDate"];
-                            advertisement = new AdvertisementView(id, title, uploadDate);
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-            }
-
-            return advertisement;
         }
     }
 }

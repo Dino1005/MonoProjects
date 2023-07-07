@@ -155,11 +155,18 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AdvertisementController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AccountCreate.cs" />
+    <Compile Include="Models\AccountUpdate.cs" />
+    <Compile Include="Models\AccountView.cs" />
+    <Compile Include="Models\AdvertisementCreate.cs" />
+    <Compile Include="Models\AdvertisementUpdate.cs" />
+    <Compile Include="Models\AdvertisementView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -230,7 +237,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\bootstrap.min.js.map" />
@@ -302,6 +308,23 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Projects.Common\Projects.Common.csproj">
+      <Project>{d761cb9f-3cf2-4c3d-a7f1-84873af46782}</Project>
+      <Name>Projects.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Projects.Model\Projects.Model.csproj">
+      <Project>{4ea7add9-413a-494a-8fb0-286ac14885dc}</Project>
+      <Name>Projects.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Projects.Service\Projects.Service.csproj">
+      <Project>{060b8e68-1dcf-47e3-8bdb-5f630f8c4bdc}</Project>
+      <Name>Projects.Service</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
