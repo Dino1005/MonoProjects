@@ -90,12 +90,6 @@ namespace Projects.Repository
 
         public async Task<int> UpdateAsync(Guid id, Advertisement advertisement)
         {
-            Task<Advertisement> advertisementToUpdate = GetAdvertisementByIdAsync(id);
-            if (advertisementToUpdate == null)
-            {
-                return 0;
-            }
-
             int affectedRows = 0;
 
             NpgsqlConnection connection = new NpgsqlConnection(Database.connectionString);
@@ -149,7 +143,7 @@ namespace Projects.Repository
 
         public async Task<int> DeleteAsync(Guid id)
         {
-            Task<Advertisement> advertisementToDelete = GetAdvertisementByIdAsync(id);
+            Advertisement advertisementToDelete = await GetAdvertisementByIdAsync(id);
             if (advertisementToDelete == null)
             {
                 return 0;

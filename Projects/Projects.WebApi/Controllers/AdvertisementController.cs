@@ -78,8 +78,14 @@ namespace Mono.WebApi.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Advertisement is null!");
             }
 
-            Advertisement advertisementToUpdate = new Advertisement(id, advertisement.Title, null, advertisement.CategoryId, advertisement.PriorityId, null);
             AdvertisementService advertisementService = new AdvertisementService();
+            Advertisement advertisementById = await advertisementService.GetByIdAsync(id);
+            if (advertisementById == null)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Advertisement with that id was not found!");
+            }
+
+            Advertisement advertisementToUpdate = new Advertisement(id, advertisement.Title, null, advertisement.CategoryId, advertisement.PriorityId, null);
             int affectedRows = await advertisementService.UpdateAsync(id, advertisementToUpdate);
             if (affectedRows == 0)
             {

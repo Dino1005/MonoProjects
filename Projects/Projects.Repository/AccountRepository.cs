@@ -131,12 +131,6 @@ namespace Projects.Repository
 
         public async Task<int> UpdateAsync(Guid id, Account account)
         {
-            Account accountToUpdate = await GetAccountByIdAsync(id);
-            if(accountToUpdate == null)
-            {
-                return 0;
-            }   
-
             int affectedRows = 0;
 
             NpgsqlConnection connection = new NpgsqlConnection(Database.connectionString);

@@ -36,6 +36,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projects.Repository.Common"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projects.Model", "Projects.Model\Projects.Model.csproj", "{4EA7ADD9-413A-494A-8FB0-286AC14885DC}"
 	ProjectSection(ProjectDependencies) = postProject
+		{9ABA401E-566D-42B8-9C47-78DD7A046177} = {9ABA401E-566D-42B8-9C47-78DD7A046177}
 		{D761CB9F-3CF2-4C3D-A7F1-84873AF46782} = {D761CB9F-3CF2-4C3D-A7F1-84873AF46782}
 	EndProjectSection
 EndProject

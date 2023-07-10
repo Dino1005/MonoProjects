@@ -79,8 +79,15 @@ namespace Projects.WebApi.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Account is null!");
             }
 
-            Account accountToUpdate = new Account(id, account.FirstName, account.LastName);
             AccountService accountService = new AccountService();
+            Account accountById = await accountService.GetByIdAsync(id);
+            if (accountById == null)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Account with that id was not found!");
+            }
+
+            Account accountToUpdate = new Account(id, account.FirstName, account.LastName);
+            
             int affectedRows = await accountService.UpdateAsync(id, accountToUpdate);
             if (affectedRows == 0)
             {

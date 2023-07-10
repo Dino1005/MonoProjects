@@ -45,5 +45,11 @@
     <Compile Include="Advertisement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Projects.Model.Common\Projects.Model.Common.csproj">
+      <Project>{9aba401e-566d-42b8-9c47-78dd7a046177}</Project>
+      <Name>Projects.Model.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
