@@ -5,19 +5,25 @@ using System.Net.Http;
 using System.Net;
 using System.Web.Http;
 using Projects.WebApi.Models;
-using Projects.Service;
 using Projects.Model;
 using System.Threading.Tasks;
+using Projects.Service.Common;
 
 namespace Projects.WebApi.Controllers
 {
     public class AccountController : ApiController
     {
+        private IAccountService AccountService { get; }
+
+        public AccountController(IAccountService accountService)
+        {
+            AccountService = accountService;
+        }
+
         [HttpGet]
         public async Task<HttpResponseMessage> GetAllAccounts()
         {
-            AccountService accountService = new AccountService();
-            List<Account> accounts = await accountService.GetAllAsync();
+            List<Account> accounts = await AccountService.GetAllAsync();
             if(accounts.Count <= 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No accounts found.");
@@ -34,8 +40,7 @@ namespace Projects.WebApi.Controllers
         [HttpGet]
         public async Task<HttpResponseMessage> GetById(Guid id)
         {
-            AccountService accountService = new AccountService();
-            Account account = await accountService.GetByIdAsync(id);
+            Account account = await AccountService.GetByIdAsync(id);
             if (account == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Account with that ID was not found!");
@@ -57,8 +62,7 @@ namespace Projects.WebApi.Controllers
             }
             Account accountToInsert = new Account(Guid.NewGuid(), account.FirstName, account.LastName);
                 
-            AccountService accountService = new AccountService();
-            int affectedRows = await accountService.AddAsync(accountToInsert);
+            int affectedRows = await AccountService.AddAsync(accountToInsert);
 
             if(affectedRows > 0)
             {
@@ -79,8 +83,7 @@ namespace Projects.WebApi.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Account is null!");
             }
 
-            AccountService accountService = new AccountService();
-            Account accountById = await accountService.GetByIdAsync(id);
+            Account accountById = await AccountService.GetByIdAsync(id);
             if (accountById == null)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Account with that id was not found!");
@@ -88,7 +91,7 @@ namespace Projects.WebApi.Controllers
 
             Account accountToUpdate = new Account(id, account.FirstName, account.LastName);
             
-            int affectedRows = await accountService.UpdateAsync(id, accountToUpdate);
+            int affectedRows = await AccountService.UpdateAsync(id, accountToUpdate);
             if (affectedRows == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Account with that ID was not found!");
@@ -108,8 +111,7 @@ namespace Projects.WebApi.Controllers
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Id is null!");
             }
 
-            AccountService accountService = new AccountService();
-            int affectedRows = await accountService.DeleteAsync(id);
+            int affectedRows = await AccountService.DeleteAsync(id);
 
             if (affectedRows > 0)
             {
@@ -122,8 +124,7 @@ namespace Projects.WebApi.Controllers
         [HttpGet]
         public async Task<HttpResponseMessage> GetAdvertisementsByAccount(Guid id)
         {
-            AccountService accountService = new AccountService();
-            List<Advertisement> advertisements = await accountService.GetAdvertisementsAsync(id);
+            List<Advertisement> advertisements = await AccountService.GetAdvertisementsAsync(id);
 
             if (advertisements.Any())
             {

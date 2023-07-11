@@ -10,6 +10,12 @@ namespace Projects.Repository
 {
     public class AccountRepository : IAccountRepository
     {
+        private Database Database { get; }
+
+        public AccountRepository(Database database)
+        {
+              Database = database;
+        }
         public async Task<List<Account>> GetAllAsync()
         {
             List<Account> accounts = new List<Account>();

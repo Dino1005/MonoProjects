@@ -1,42 +1,43 @@
 ﻿using Projects.Model;
-using Projects.Repository;
 using System.Collections.Generic;
 using System;
 using Projects.Service.Common;
 using System.Threading.Tasks;
+using Projects.Repository.Common;
 
 namespace Projects.Service
 {
     public class AdvertisementService : IAdvertisementService
     {
+        private IAdvertisementRepository AdvertisementRepository { get; }
+
+        public AdvertisementService(IAdvertisementRepository advertisementRepository)
+        {
+            AdvertisementRepository = advertisementRepository;
+        }
         public async Task<List<Advertisement>> GetAllAsync()
         {
-            AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return await advertisementRepository.GetAllAsync();
+            return await AdvertisementRepository.GetAllAsync();
         }
 
         public async Task<Advertisement> GetByIdAsync(Guid id)
         {
-            AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return await advertisementRepository.GetByIdAsync(id);
+            return await AdvertisementRepository.GetByIdAsync(id);
         }
 
         public async Task<int> AddAsync(Advertisement advertisement)
         {
-            AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return await advertisementRepository.AddAsync(advertisement);
+            return await AdvertisementRepository.AddAsync(advertisement);
         }
 
         public async Task<int> UpdateAsync(Guid id, Advertisement advertisement)
         {
-            AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return await advertisementRepository.UpdateAsync(id, advertisement);
+            return await AdvertisementRepository.UpdateAsync(id, advertisement);
         }
 
         public async Task<int> DeleteAsync(Guid id)
         {
-            AdvertisementRepository advertisementRepository = new AdvertisementRepository();
-            return await advertisementRepository.DeleteAsync(id);
+            return await AdvertisementRepository.DeleteAsync(id);
         }
     }
 }

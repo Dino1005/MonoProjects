@@ -10,6 +10,12 @@ namespace Projects.Repository
 {
     public class AdvertisementRepository : IAdvertisementRepository
     {
+        private Database Database { get; }
+
+        public AdvertisementRepository(Database database)
+        {
+            Database = database;
+        }
         public async Task<List<Advertisement>> GetAllAsync()
         {
             List<Advertisement> advertisements = new List<Advertisement>();
