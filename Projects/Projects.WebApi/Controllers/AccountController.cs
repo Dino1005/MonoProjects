@@ -8,6 +8,7 @@ using Projects.WebApi.Models;
 using Projects.Model;
 using System.Threading.Tasks;
 using Projects.Service.Common;
+using Projects.Common;
 
 namespace Projects.WebApi.Controllers
 {
@@ -21,20 +22,24 @@ namespace Projects.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<HttpResponseMessage> GetAllAccounts()
+        public async Task<HttpResponseMessage> GetAllAccounts(string sortBy = "id", string sortOrder = "asc", int pageSize = 2, int pageNumber = 1, string firstNameQuery = null, string lastNameQuery = null)
         {
-            List<Account> accounts = await AccountService.GetAllAsync();
-            if(accounts.Count <= 0)
+            Sorting sorting = new Sorting(sortBy, sortOrder);
+            Paging paging = new Paging(pageSize, pageNumber);
+            AccountFilter filter = new AccountFilter(firstNameQuery, lastNameQuery);
+
+            PageList<Account> accounts = await AccountService.GetAllAsync(sorting, paging, filter);
+            if(accounts.Items.Count <= 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No accounts found.");
             }
 
             List<AccountView> accountViews = new List<AccountView>();
-            foreach (var account in accounts)
+            foreach (var account in accounts.Items)
             {
                 accountViews.Add(new AccountView(account.FirstName, account.LastName));
             }
-            return Request.CreateResponse(HttpStatusCode.OK, accountViews);
+            return Request.CreateResponse(HttpStatusCode.OK, new PageList<AccountView>(accountViews, accounts.TotalCount));
         }
 
         [HttpGet]

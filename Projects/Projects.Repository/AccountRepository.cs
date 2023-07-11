@@ -5,6 +5,8 @@ using System.Text;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
+using Projects.Common;
+using System.Linq;
 
 namespace Projects.Repository
 {
@@ -16,14 +18,46 @@ namespace Projects.Repository
         {
               Database = database;
         }
-        public async Task<List<Account>> GetAllAsync()
+        public async Task<PageList<Account>> GetAllAsync(Sorting sorting, Paging paging, AccountFilter filter)
         {
             List<Account> accounts = new List<Account>();
+            int totalCount = 0;
+
             NpgsqlConnection connection = new NpgsqlConnection(Database.connectionString);
 
             NpgsqlCommand command = new NpgsqlCommand();
-            command.CommandText = "SELECT * FROM Account";
+            NpgsqlCommand countCommand = new NpgsqlCommand();
             command.Connection = connection;
+            countCommand.Connection = connection;
+
+            StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Account ");
+            StringBuilder countQueryBuilder = new StringBuilder();
+
+            queryBuilder.Append("WHERE 1=1 ");
+
+            if (!string.IsNullOrEmpty(filter.FirstNameQuery))
+            {
+                queryBuilder.Append("AND FirstName LIKE @FirstNameQuery ");
+                command.Parameters.AddWithValue("@FirstNameQuery", $"{filter.FirstNameQuery}%");
+                countCommand.Parameters.AddWithValue("@FirstNameQuery", $"{filter.FirstNameQuery}%");
+            }
+            if (!string.IsNullOrEmpty(filter.LastNameQuery))
+            {
+                queryBuilder.Append("AND LastName LIKE @LastNameQuery ");
+                command.Parameters.AddWithValue("@LastNameQuery", $"{filter.LastNameQuery}%");
+                countCommand.Parameters.AddWithValue("@LastNameQuery", $"{filter.LastNameQuery}%");
+            }
+
+            countQueryBuilder.Append(queryBuilder.ToString());
+            countQueryBuilder.Replace("SELECT *", "SELECT COUNT(*)");
+
+            queryBuilder.Append($"ORDER BY {sorting.SortBy} {sorting.SortOrder}");
+            queryBuilder.Append(" LIMIT @PageSize OFFSET @Offset");
+            command.Parameters.AddWithValue("@PageSize", paging.PageSize);
+            command.Parameters.AddWithValue("@Offset", paging.PageNumber * paging.PageSize - paging.PageSize);
+
+            command.CommandText = queryBuilder.ToString();
+            countCommand.CommandText = countQueryBuilder.ToString();
 
             using (connection)
             {
@@ -42,6 +76,8 @@ namespace Projects.Repository
                             accounts.Add(new Account(id, firstName, lastName));
                         }
                     }
+                    reader.Close();
+                    totalCount = Convert.ToInt32(await countCommand.ExecuteScalarAsync());
                 }
                 catch (Exception)
                 {
@@ -49,7 +85,7 @@ namespace Projects.Repository
                 }
             }
 
-            return accounts;
+            return new PageList<Account>(accounts, totalCount);
         }
 
         public async Task<Account> GetByIdAsync(Guid id)

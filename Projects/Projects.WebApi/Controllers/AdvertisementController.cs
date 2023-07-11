@@ -5,9 +5,10 @@ using System.Net;
 using System.Web.Http;
 using Projects.Model;
 using Projects.WebApi.Models;
-using Projects.Service;
+using Projects.Common;
 using System.Threading.Tasks;
 using Projects.Service.Common;
+using System.Linq;
 
 namespace Mono.WebApi.Controllers
 {
@@ -20,20 +21,24 @@ namespace Mono.WebApi.Controllers
             AdvertisementService = advertisementService;
         }
         [HttpGet]
-        public async Task<HttpResponseMessage> GetAllAdvertisements()
+        public async Task<HttpResponseMessage> GetAllAdvertisements(string sortBy = "id", string sortOrder = "asc", int pageSize = 2, int pageNumber = 1, string titleQuery = null, string dateQuery = null, string priorityQuery = null, string categoryQuery = null, string accountQuery = null)
         {
-            List<Advertisement> advertisements = await AdvertisementService.GetAllAsync();
-            if (advertisements.Count <= 0)
+            Sorting sorting = new Sorting(sortBy, sortOrder);
+            Paging paging = new Paging(pageSize, pageNumber);
+            AdvertisementFilter filter = new AdvertisementFilter(titleQuery, dateQuery, priorityQuery != null ? priorityQuery.Split().Select(Guid.Parse).ToList() : null, categoryQuery != null ? categoryQuery.Split().Select(Guid.Parse).ToList() : null, accountQuery != null ? accountQuery.Split().Select(Guid.Parse).ToList() : null);
+
+            PageList<Advertisement> advertisements = await AdvertisementService.GetAllAsync(sorting, paging, filter);
+            if (advertisements.Items.Count <= 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "No advertisements found.");
             }
 
             List<AdvertisementView> advertisementViews = new List<AdvertisementView>();
-            foreach (var advertisement in advertisements)
+            foreach (var advertisement in advertisements.Items)
             {
                 advertisementViews.Add(new AdvertisementView(advertisement.Title, advertisement.UploadDate));
             }
-            return Request.CreateResponse(HttpStatusCode.OK, advertisementViews);
+            return Request.CreateResponse(HttpStatusCode.OK, new PageList<AdvertisementView>(advertisementViews, advertisements.TotalCount));
         }
 
         [HttpGet]

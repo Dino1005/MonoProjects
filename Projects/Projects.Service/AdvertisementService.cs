@@ -4,6 +4,7 @@ using System;
 using Projects.Service.Common;
 using System.Threading.Tasks;
 using Projects.Repository.Common;
+using Projects.Common;
 
 namespace Projects.Service
 {
@@ -15,9 +16,9 @@ namespace Projects.Service
         {
             AdvertisementRepository = advertisementRepository;
         }
-        public async Task<List<Advertisement>> GetAllAsync()
+        public async Task<PageList<Advertisement>> GetAllAsync(Sorting sorting, Paging paging, AdvertisementFilter filter)
         {
-            return await AdvertisementRepository.GetAllAsync();
+            return await AdvertisementRepository.GetAllAsync(sorting, paging, filter);
         }
 
         public async Task<Advertisement> GetByIdAsync(Guid id)

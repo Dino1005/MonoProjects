@@ -1,10 +1,12 @@
 ﻿using Npgsql;
+using Projects.Common;
 using Projects.Model;
 using Projects.Repository.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Projects.Repository
 {
@@ -16,14 +18,82 @@ namespace Projects.Repository
         {
             Database = database;
         }
-        public async Task<List<Advertisement>> GetAllAsync()
+        public async Task<PageList<Advertisement>> GetAllAsync(Sorting sorting, Paging paging, AdvertisementFilter filter)
         {
             List<Advertisement> advertisements = new List<Advertisement>();
+            int totalCount = 0;
+
             NpgsqlConnection connection = new NpgsqlConnection(Database.connectionString);
 
             NpgsqlCommand command = new NpgsqlCommand();
-            command.CommandText = "SELECT * FROM Advertisement";
+            NpgsqlCommand countCommand = new NpgsqlCommand();
             command.Connection = connection;
+            countCommand.Connection = connection;
+
+            StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Advertisement ");
+            StringBuilder countQueryBuilder = new StringBuilder();
+
+            queryBuilder.Append("WHERE 1=1 ");
+
+            if (!string.IsNullOrEmpty(filter.TitleQuery))
+            {
+                queryBuilder.Append("AND Title LIKE @TitleQuery ");
+                command.Parameters.AddWithValue("@TitleQuery", $"{filter.TitleQuery}%");
+                countCommand.Parameters.AddWithValue("@TitleQuery", $"{filter.TitleQuery}%");
+            }
+            if (filter.DateQuery != null)
+            {
+                queryBuilder.Append("AND UploadDate > @DateQuery ");
+                command.Parameters.AddWithValue("@DateQuery", $"'{filter.DateQuery}'");
+                countCommand.Parameters.AddWithValue("@DateQuery", $"'{filter.DateQuery}'");
+            }
+            if(filter.PriorityQuery != null)
+            {
+                StringBuilder priorityQuery = new StringBuilder();
+                priorityQuery.Append("(");
+                foreach (var priority in filter.PriorityQuery)
+                {
+                    priorityQuery.Append($"'{priority}',");
+                }
+                priorityQuery.Remove(priorityQuery.Length - 1, 1);
+                priorityQuery.Append(")");
+                queryBuilder.Append($"AND PriorityId IN {priorityQuery} ");
+            }
+            if (filter.CategoryQuery != null)
+            {
+                StringBuilder categoryQuery = new StringBuilder();
+                categoryQuery.Append("(");
+                foreach (var category in filter.CategoryQuery)
+                {
+                    categoryQuery.Append($"'{category}',");
+                }
+                categoryQuery.Remove(categoryQuery.Length - 1, 1);
+                categoryQuery.Append(")");
+                queryBuilder.Append($"AND CategoryId IN {categoryQuery} ");
+            }
+            if (filter.AccountQuery != null)
+            {
+                StringBuilder accountQuery = new StringBuilder();
+                accountQuery.Append("(");
+                foreach (var account in filter.AccountQuery)
+                {
+                    accountQuery.Append($"'{account}',");
+                }
+                accountQuery.Remove(accountQuery.Length - 1, 1);
+                accountQuery.Append(")");
+                queryBuilder.Append($"AND AccountId IN {accountQuery} ");
+            }
+
+            countQueryBuilder.Append(queryBuilder.ToString());
+            countQueryBuilder.Replace("SELECT *", "SELECT COUNT(*)");
+
+            queryBuilder.Append($"ORDER BY {sorting.SortBy} {sorting.SortOrder}");
+            queryBuilder.Append(" LIMIT @PageSize OFFSET @Offset");
+            command.Parameters.AddWithValue("@PageSize", paging.PageSize);
+            command.Parameters.AddWithValue("@Offset", paging.PageNumber * paging.PageSize - paging.PageSize);
+
+            command.CommandText = queryBuilder.ToString();
+            countCommand.CommandText = countQueryBuilder.ToString();
 
             using (connection)
             {
@@ -45,14 +115,18 @@ namespace Projects.Repository
                             advertisements.Add(new Advertisement(Id, title, uploadDate, categoryId, priorityId, accountId));
                         }
                     }
+                    reader.Close();
+                    totalCount = Convert.ToInt32(await countCommand.ExecuteScalarAsync());
                 }
                 catch (Exception)
                 {
                     throw;
                 }
+
+               
             }
 
-            return advertisements;
+            return new PageList<Advertisement>(advertisements, totalCount);
         }
 
         public async Task<Advertisement> GetByIdAsync(Guid id)
