@@ -44,8 +44,8 @@ namespace Projects.Repository
             if (filter.DateQuery != null)
             {
                 queryBuilder.Append("AND UploadDate > @DateQuery ");
-                command.Parameters.AddWithValue("@DateQuery", $"'{filter.DateQuery}'");
-                countCommand.Parameters.AddWithValue("@DateQuery", $"'{filter.DateQuery}'");
+                command.Parameters.AddWithValue("@DateQuery", filter.DateQuery);
+                countCommand.Parameters.AddWithValue("@DateQuery", filter.DateQuery);
             }
             if(filter.PriorityQuery != null)
             {

@@ -9,12 +9,12 @@ namespace Projects.Common
     public class AdvertisementFilter
     {
         public string TitleQuery { get; set; }
-        public string DateQuery { get; set; }
+        public DateTime? DateQuery { get; set; }
         public List<Guid> PriorityQuery { get; set; }
         public List<Guid> CategoryQuery { get; set; }
         public List<Guid> AccountQuery { get; set; }
 
-        public AdvertisementFilter(string titleQuery, string dateQuery, List<Guid> priorityQuery, List<Guid> categoryQuery, List<Guid> accountQuery)
+        public AdvertisementFilter(string titleQuery, DateTime? dateQuery, List<Guid> priorityQuery, List<Guid> categoryQuery, List<Guid> accountQuery)
         {
             TitleQuery = titleQuery;
             DateQuery = dateQuery;

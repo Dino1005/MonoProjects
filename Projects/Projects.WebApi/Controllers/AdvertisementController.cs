@@ -25,7 +25,7 @@ namespace Mono.WebApi.Controllers
         {
             Sorting sorting = new Sorting(sortBy, sortOrder);
             Paging paging = new Paging(pageSize, pageNumber);
-            AdvertisementFilter filter = new AdvertisementFilter(titleQuery, dateQuery, priorityQuery != null ? priorityQuery.Split().Select(Guid.Parse).ToList() : null, categoryQuery != null ? categoryQuery.Split().Select(Guid.Parse).ToList() : null, accountQuery != null ? accountQuery.Split().Select(Guid.Parse).ToList() : null);
+            AdvertisementFilter filter = new AdvertisementFilter(titleQuery, DateTime.Parse(dateQuery), priorityQuery != null ? priorityQuery.Split().Select(Guid.Parse).ToList() : null, categoryQuery != null ? categoryQuery.Split().Select(Guid.Parse).ToList() : null, accountQuery != null ? accountQuery.Split().Select(Guid.Parse).ToList() : null);
 
             PageList<Advertisement> advertisements = await AdvertisementService.GetAllAsync(sorting, paging, filter);
             if (advertisements.Items.Count <= 0)
