@@ -22,7 +22,7 @@ namespace Projects.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<HttpResponseMessage> GetAllAccounts(string sortBy = "id", string sortOrder = "asc", int pageSize = 2, int pageNumber = 1, string firstNameQuery = null, string lastNameQuery = null)
+        public async Task<HttpResponseMessage> GetAllAccounts(string sortBy = "id", string sortOrder = "asc", int pageSize = 10, int pageNumber = 1, string firstNameQuery = null, string lastNameQuery = null)
         {
             Sorting sorting = new Sorting(sortBy, sortOrder);
             Paging paging = new Paging(pageSize, pageNumber);
@@ -37,7 +37,7 @@ namespace Projects.WebApi.Controllers
             List<AccountView> accountViews = new List<AccountView>();
             foreach (var account in accounts.Items)
             {
-                accountViews.Add(new AccountView(account.FirstName, account.LastName));
+                accountViews.Add(new AccountView(account.Id, account.FirstName, account.LastName));
             }
             return Request.CreateResponse(HttpStatusCode.OK, new PageList<AccountView>(accountViews, accounts.TotalCount));
         }
@@ -51,7 +51,7 @@ namespace Projects.WebApi.Controllers
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Account with that ID was not found!");
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, new AccountView(account.FirstName, account.LastName));
+            return Request.CreateResponse(HttpStatusCode.OK, new AccountView(account.Id, account.FirstName, account.LastName));
         }
 
         [HttpPost]
@@ -99,7 +99,7 @@ namespace Projects.WebApi.Controllers
             int affectedRows = await AccountService.UpdateAsync(id, accountToUpdate);
             if (affectedRows == 0)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound, "Account with that ID was not found!");
+                return Request.CreateResponse(HttpStatusCode.NoContent, "Data was not changed!");
             }
             if (affectedRows > 0)
             {
